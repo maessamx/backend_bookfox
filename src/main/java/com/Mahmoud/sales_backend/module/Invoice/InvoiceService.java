@@ -1,0 +1,143 @@
+package com.Mahmoud.sales_backend.module.Invoice;
+
+import com.Mahmoud.sales_backend.model.Invoice;
+import com.Mahmoud.sales_backend.model.InvoiceItem;
+import com.Mahmoud.sales_backend.shared.ApiResponse;
+import com.Mahmoud.sales_backend.security.UserContext;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class InvoiceService {
+
+    private final InvoiceRepository invoiceRepository;
+
+    public InvoiceService(InvoiceRepository invoiceRepository) {
+        this.invoiceRepository = invoiceRepository;
+    }
+
+    // ================= GetAll =================
+    public ApiResponse getAll() {
+        Integer userId = UserContext.getUserId();
+        String role = UserContext.getRole();
+
+        List<Invoice> invoices;
+
+        if ("admin".equals(role)) {
+            invoices = invoiceRepository.getAll();
+        } else {
+            invoices = invoiceRepository.getInvoicesByMandoob(userId);
+        }
+
+        return ApiResponse.success(invoices);
+    }
+
+    // ================= GetById =================
+    public ApiResponse getById(int id) {
+        if (id <= 0) {
+            return ApiResponse.error("Invalid ID");
+        }
+
+        Invoice invoice = invoiceRepository.getById(id);
+
+        if (invoice == null) {
+            return ApiResponse.error("Invoice not found");
+        }
+
+        return ApiResponse.success(invoice);
+    }
+
+    // ================= GetByClient =================
+    public ApiResponse getByClient(int clientId) {
+        if (clientId <= 0) {
+            return ApiResponse.error("Invalid client ID");
+        }
+
+        List<Invoice> invoices = invoiceRepository.getInvoicesByClient(clientId);
+
+        return ApiResponse.success(invoices);
+    }
+
+    // ================= GetByMandoob =================
+    public ApiResponse getByMandoob(int mandoobId) {
+        if (mandoobId <= 0) {
+            return ApiResponse.error("Invalid mandoob ID");
+        }
+
+        List<Invoice> invoices = invoiceRepository.getInvoicesByMandoob(mandoobId);
+
+        return ApiResponse.success(invoices);
+    }
+
+    // ================= GetWithItems =================
+    public ApiResponse getWithItems(int id) {
+        if (id <= 0) {
+            return ApiResponse.error("Invalid ID");
+        }
+
+        Invoice invoice = invoiceRepository.getById(id);
+
+        if (invoice == null) {
+            return ApiResponse.error("Invoice not found");
+        }
+
+        List<InvoiceItem> items = invoiceRepository.getInvoiceItems(id);
+        invoice.setItems(items);
+
+        return ApiResponse.success(invoice);
+    }
+
+    // ================= Create =================
+    public ApiResponse create(Invoice invoice) {
+        double paid = invoice.getPaid();
+        double total = invoice.getTotal();
+        if (invoice.getClientId() <= 0) {
+            return ApiResponse.error("Invalid client ID");
+        }
+        if (invoice.getMandoobId() <= 0) {
+            return ApiResponse.error("Invalid mandoob ID");
+        }
+        if (total <= 0) {
+            return ApiResponse.error("Total cannot be negative or zero");
+        }
+        if (paid < 0) {
+            return ApiResponse.error("paid cannot be negative");
+        }
+        if (paid>total) {
+            return ApiResponse.error("paid cannot be more than total");
+        }
+        
+
+        if (paid <= 0) {
+            invoice.setStatus("unpaid");
+        } else if (paid < total) {
+            invoice.setStatus("partial");
+        } else {
+            invoice.setStatus("paid");
+        }
+
+        boolean isCreated = invoiceRepository.create(invoice);
+
+        if (isCreated) {
+            return ApiResponse.success("Invoice created successfully");
+        }
+
+        return ApiResponse.error("Failed to create invoice");
+    }
+
+    // ================= Delete =================
+    public ApiResponse delete(int id) {
+        if (id <= 0) {
+            return ApiResponse.error("Invalid ID");
+        }
+
+        boolean isDeleted = invoiceRepository.delete(id);
+
+        if (isDeleted) {
+            return ApiResponse.success("Invoice deleted successfully");
+        }
+
+        return ApiResponse.error("Delete failed");
+    }
+}
