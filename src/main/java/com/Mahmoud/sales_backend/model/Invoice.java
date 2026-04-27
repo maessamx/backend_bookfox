@@ -1,10 +1,15 @@
 package com.Mahmoud.sales_backend.model;
 import java.util.Date;
+import java.util.List;
+import lombok.Data;
+@Data
 public class Invoice {
     private int id;
     private int mandoobId;
     private int clientId;
     private double total;
-    private boolean paid;
+    private double paid;
+    private String status;
+    private List<InvoiceItem> items;
     private Date createdAt;
 }

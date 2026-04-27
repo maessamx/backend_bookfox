@@ -23,8 +23,12 @@ public class ClientController {
         this.clientService = clientService;
     }
     @GetMapping
-    public ApiResponse getAll(HttpServletRequest request) {
+    public ApiResponse getAll() {
         return clientService.getAll();
+    }
+    @GetMapping("/mandoob/{mandoobId}")
+    public ApiResponse getByMandoob(@PathVariable int mandoobId) {
+        return clientService.getByMandoob(mandoobId);
     }
     @GetMapping("/{id}")
     public ApiResponse getById(@PathVariable int id) {

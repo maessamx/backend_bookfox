@@ -24,7 +24,7 @@ public class ClientService {
         Integer userId = UserContext.getUserId();
         String role = UserContext.getRole();
         List<Client> clients;
-        if(role == "admin"){
+        if ("admin".equals(role)) {
             clients = clientRepository.getAll();
         }else{
             clients = clientRepository.getClientsByMandoob(userId);
@@ -74,9 +74,11 @@ public class ClientService {
     }
     // ================= Get By Mandoob =================
     public ApiResponse getByMandoob(int mandoobId) {
-
-        List<Client> clients = clientRepository.getClientsByMandoob(mandoobId);
-
-        return ApiResponse.success(clients);
+        String role = UserContext.getRole();
+        if ("admin".equals(role)) {
+            List<Client> clients = clientRepository.getClientsByMandoob(mandoobId);
+            return ApiResponse.success(clients);
+        }
+        return ApiResponse.error("not allowed");
     }
 }
