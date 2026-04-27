@@ -1,0 +1,94 @@
+package com.Mahmoud.sales_backend.module.Client;
+import java.sql.Connection;
+import org.springframework.stereotype.Repository;
+import com.Mahmoud.sales_backend.model.Client;
+import com.Mahmoud.sales_backend.Repository.BaseRepository;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
+@Repository
+public class ClientRepository extends BaseRepository {
+    public ClientRepository(Connection conn) {
+        super(conn);
+    }
+
+    // ================= Get All =================
+    public List<Client> getAll() {
+
+        List<Map<String, Object>> result = super.getAll("clients");
+
+        List<Client> clients = new ArrayList<>();
+
+        for (Map<String, Object> row : result) {
+            clients.add(mapToClient(row));
+        }
+
+        return clients;
+    }
+    // ================= Get All =================
+    public List<Client> getClientsByMandoob(int mandoobid) {
+
+        List<Map<String, Object>> result =
+                query("SELECT * FROM clients WHERE mandoob_id = ?", mandoobid);
+
+        List<Client> clients = new ArrayList<>();
+
+        for (Map<String, Object> row : result) {
+            clients.add(mapToClient(row));
+        }
+
+        return clients;
+    }
+    // ================= Get By ID =================
+    public Client getById(int id) {
+
+        List<Map<String, Object>> result =
+                query("SELECT * FROM clients WHERE id = ?", id);
+
+        if (result.isEmpty()) return null;
+
+        return mapToClient(result.get(0));
+    }
+    // ================= Create =================
+    public boolean create(Client client) {
+        try {
+            Map<String, Object> data = Map.of(
+            "name", client.getName(),
+            "address", client.getAddress(),
+            "phone", client.getPhone(),
+            "mandoob_id", client.getMandoobId()
+            );
+            return insert("clients", data) >0;
+        } catch (Exception e) {
+            System.out.println("DB ERROR: " + e.getMessage());
+            return false;
+        }
+    }
+    // ================= Delete =================
+    public boolean delete(int id) {
+        try {
+            return delete("clients", "id", id) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // ================= Mapper =================
+    private Client mapToClient(Map<String, Object> row) {
+
+        Client client = new Client();
+
+        client.setId((int) row.get("id"));
+        client.setName((String) row.get("name"));
+        client.setAddress((String) row.get("address"));
+        client.setPhone((String) row.get("phone"));
+        client.setMandoobId((int) row.get("mandoob_id"));
+        client.setCreatedAt((Date) row.get("created_at"));
+        client.setUpdatedAt((Date) row.get("updated_at"));
+
+        return client;
+    }
+}

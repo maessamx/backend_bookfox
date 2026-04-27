@@ -1,5 +1,8 @@
 package com.Mahmoud.sales_backend.model;
+import lombok.Data;
 import java.util.Date;
+
+@Data
 public class Client {
     private int id;
     private String name;
@@ -7,4 +10,5 @@ public class Client {
     private String phone;
     private int mandoobId;
     private Date createdAt; 
+    private Date updatedAt; 
 }
