@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 import com.Mahmoud.sales_backend.Repository.AuthRepository;
 import com.Mahmoud.sales_backend.model.User;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
-
+import java.util.Map;
+import java.util.HashMap;
 @Service
 public class AuthService {
 
@@ -63,8 +64,13 @@ public class AuthService {
         }
 
         String token = authRepository.generateToken(user);
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", token);
+        data.put("id", user.getId());
+        data.put("name", user.getName());
+        data.put("role", user.getRole());
 
-        return ApiResponse.success(token);
+        return ApiResponse.success(data);
     }
 
 }

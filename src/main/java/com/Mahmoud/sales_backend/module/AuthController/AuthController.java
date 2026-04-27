@@ -17,7 +17,7 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
-
+    // localhost:8080/auth/login
     @PostMapping("/login")
     public ApiResponse login(@RequestParam String email,
                              @RequestParam String password) {
