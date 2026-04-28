@@ -1,18 +1,18 @@
-package com.Mahmoud.sales_backend.service;
+package com.Mahmoud.sales_backend.module.AdminAuth;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.Mahmoud.sales_backend.Repository.AuthRepository;
 import com.Mahmoud.sales_backend.model.User;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
-import java.util.Map;
-import java.util.HashMap;
 @Service
-public class AuthService {
+public class AdminAuthService {
 
-    private final AuthRepository authRepository;
+    private final AdminAuthRepository authRepository;
 
-    public AuthService(AuthRepository authRepository) {
+    public AdminAuthService(AdminAuthRepository authRepository) {
         this.authRepository = authRepository;
     }
 

@@ -1,4 +1,4 @@
-package com.Mahmoud.sales_backend.Repository;
+package com.Mahmoud.sales_backend.module.AdminAuth;
 
 import java.sql.Connection;
 import java.util.List;
@@ -6,16 +6,17 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
+import com.Mahmoud.sales_backend.Repository.BaseRepository;
 import com.Mahmoud.sales_backend.model.User;
 import com.Mahmoud.sales_backend.shared.JwtUtil;
 
 
 @Repository
-public class AuthRepository extends BaseRepository {
+public class AdminAuthRepository extends BaseRepository {
 
     private final JwtUtil jwtUtil;
 
-    public AuthRepository(Connection conn,JwtUtil jwtUtil) {
+    public AdminAuthRepository(Connection conn,JwtUtil jwtUtil) {
         super(conn);
         this.jwtUtil = jwtUtil;
     }
