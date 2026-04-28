@@ -45,8 +45,12 @@ public class ProductController {
     }
 
     // PUT /products
-    @PutMapping
-    public ApiResponse update(@RequestBody Product product) {
+    @PutMapping("/{id}")
+    public ApiResponse update(@PathVariable int id, @RequestBody Product product) {
+        if (id <= 0) {
+            return ApiResponse.error("Invalid product id");
+        }
+        product.setId(id);
         return productService.update(product);
     }
 

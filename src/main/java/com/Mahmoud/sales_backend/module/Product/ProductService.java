@@ -2,9 +2,14 @@ package com.Mahmoud.sales_backend.module.Product;
 
 import com.Mahmoud.sales_backend.model.Product;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
+
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.Mahmoud.sales_backend.security.UserContext;
 
 @Service
 public class ProductService {
@@ -17,8 +22,23 @@ public class ProductService {
 
     // ================= GetAll =================
     public ApiResponse getAll() {
+        String role = UserContext.getRole();
+        if (!"admin".equals(role)) {
+            return ApiResponse.error("Not allowed");
+        }
         List<Product> products = productRepository.getAll();
-        return ApiResponse.success(products);
+        double totalValue = products.stream()
+            .mapToDouble(p -> p.getSellprice() * p.getQuantity())
+            .sum();
+        int count = productRepository.countLowStock();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("products", products);
+        response.put("total_products", products.size());
+        response.put("total_value", totalValue);
+        response.put("lowstockcount", count);
+
+        return ApiResponse.success(response);
     }
 
     // ================= GetById =================
@@ -53,6 +73,8 @@ public class ProductService {
 
         if (product.getSellprice() <= 0)
             return ApiResponse.error("Sell price must be greater than 0");
+        if (product.getSellprice() < product.getPricecost())
+            return ApiResponse.error("Sell price must be greater than cost price");
 
         if (product.getPricecost() <= 0)
             return ApiResponse.error("Price cost must be greater than 0");
@@ -62,7 +84,7 @@ public class ProductService {
 
         if (product.getMinStock() < 0)
             return ApiResponse.error("Min stock cannot be negative");
-
+git restore --staged . 
         boolean isCreated = productRepository.create(product);
 
         if (isCreated)
