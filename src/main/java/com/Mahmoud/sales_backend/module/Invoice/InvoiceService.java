@@ -1,10 +1,12 @@
 package com.Mahmoud.sales_backend.module.Invoice;
 
 import com.Mahmoud.sales_backend.model.Invoice;
+import com.Mahmoud.sales_backend.model.Product;
 import com.Mahmoud.sales_backend.model.InvoiceItem;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
 import com.Mahmoud.sales_backend.security.UserContext;
 import org.springframework.stereotype.Service;
+import com.Mahmoud.sales_backend.module.Product.ProductRepository;
 
 import java.util.List;
 
@@ -12,9 +14,11 @@ import java.util.List;
 public class InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
+    private final ProductRepository productRepository;
 
-    public InvoiceService(InvoiceRepository invoiceRepository) {
+    public InvoiceService(InvoiceRepository invoiceRepository,ProductRepository productRepository) {
         this.invoiceRepository = invoiceRepository;
+        this.productRepository =productRepository;
     }
 
     // ================= GetAll =================
@@ -90,25 +94,44 @@ public class InvoiceService {
 
     // ================= Create =================
     public ApiResponse create(Invoice invoice) {
-        double paid = invoice.getPaid();
-        double total = invoice.getTotal();
-        if (invoice.getClientId() <= 0) {
-            return ApiResponse.error("Invalid client ID");
-        }
-        if (invoice.getMandoobId() <= 0) {
-            return ApiResponse.error("Invalid mandoob ID");
-        }
-        if (total <= 0) {
-            return ApiResponse.error("Total cannot be negative or zero");
-        }
-        if (paid < 0) {
-            return ApiResponse.error("paid cannot be negative");
-        }
-        if (paid>total) {
-            return ApiResponse.error("paid cannot be more than total");
-        }
-        
 
+        if (invoice.getClientId() <= 0)
+            return ApiResponse.error("Invalid client ID");
+
+        if (invoice.getMandoobId() <= 0)
+            return ApiResponse.error("Invalid mandoob ID");
+
+        if (invoice.getItems() == null || invoice.getItems().isEmpty())
+            return ApiResponse.error("Invoice must have items");
+
+        double total = 0;
+
+        // ================= PROCESS ITEMS =================
+        for (InvoiceItem item : invoice.getItems()) {
+
+            Product product = productRepository.getById(item.getProductId());
+
+            if (product == null)
+                return ApiResponse.error("Product not found: " + item.getProductId());
+
+            double price = product.getSellprice();
+            double itemTotal = price * item.getQuantity();
+
+            item.setSellprice(price);
+            item.setPricecost(product.getPricecost());
+            double profit = price - product.getPricecost();
+            item.setProfit(profit);
+            item.setTotal(itemTotal);
+
+            total += itemTotal;
+        }
+
+        // ================= SET TOTAL =================
+        invoice.setTotal(total);
+
+        double paid = invoice.getPaid();
+
+        // ================= STATUS =================
         if (paid <= 0) {
             invoice.setStatus("unpaid");
         } else if (paid < total) {
@@ -116,14 +139,15 @@ public class InvoiceService {
         } else {
             invoice.setStatus("paid");
         }
-
+    
+        // ================= SAVE INVOICE =================
         boolean isCreated = invoiceRepository.create(invoice);
-
-        if (isCreated) {
-            return ApiResponse.success("Invoice created successfully");
-        }
-
-        return ApiResponse.error("Failed to create invoice");
+    
+        if (!isCreated)
+            return ApiResponse.error("Failed to create invoice");
+    
+    
+        return ApiResponse.success("Invoice created successfully");
     }
 
     // ================= Delete =================

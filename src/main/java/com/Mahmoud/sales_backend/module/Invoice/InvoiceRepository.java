@@ -4,13 +4,17 @@ import com.Mahmoud.sales_backend.Repository.BaseRepository;
 import com.Mahmoud.sales_backend.model.Invoice;
 import com.Mahmoud.sales_backend.model.InvoiceItem;
 import org.springframework.stereotype.Repository;
-
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
+import java.util.LinkedHashMap;
 @Repository
 public class InvoiceRepository extends BaseRepository {
 
@@ -92,21 +96,70 @@ public class InvoiceRepository extends BaseRepository {
     }
 
     // ================= Create =================
-    public boolean create(Invoice invoice) {
-        try {
-            Map<String, Object> data = Map.of(
-                    "mandoob_id", invoice.getMandoobId(),
-                    "client_id",  invoice.getClientId(),
-                    "total",      invoice.getTotal(),
-                    "paid",       invoice.getPaid(),
-                    "status",     invoice.getStatus()
-            );
-            return insert("invoices", data) > 0;
-        } catch (Exception e) {
-            System.out.println("DB ERROR: " + e.getMessage());
-            return false;
+    // ================= Create Invoice With Items (Transaction) =================
+public boolean create(Invoice invoice) {
+    try {
+        conn.setAutoCommit(false);
+
+        // 1) Insert invoice & get generated ID
+        Map<String, Object> invoiceData = new LinkedHashMap<>();
+        invoiceData.put("mandoob_id", invoice.getMandoobId());
+        invoiceData.put("client_id",  invoice.getClientId());
+        invoiceData.put("total",      invoice.getTotal());
+        invoiceData.put("paid",       invoice.getPaid());
+        invoiceData.put("status",     invoice.getStatus());
+
+        String invoiceSql = "INSERT INTO invoices (mandoob_id, client_id, total, paid, status) " +
+                            "VALUES (?, ?, ?, ?, ?)";
+
+        int invoiceId;
+        try (PreparedStatement stmt = conn.prepareStatement(invoiceSql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setObject(1, invoice.getMandoobId());
+            stmt.setObject(2, invoice.getClientId());
+            stmt.setObject(3, invoice.getTotal());
+            stmt.setObject(4, invoice.getPaid());
+            stmt.setObject(5, invoice.getStatus());
+            stmt.executeUpdate();
+
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (!generatedKeys.next()) {
+                conn.rollback();
+                return false;
+            }
+            invoiceId = generatedKeys.getInt(1);
         }
+
+        // 2) Insert each item
+        String itemSql = "INSERT INTO invoice_items " +
+                         "(invoice_id, product_id, quantity, sell_price, price_cost, total, profit) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = conn.prepareStatement(itemSql)) {
+            for (InvoiceItem item : invoice.getItems()) {
+                stmt.setInt(1, invoiceId);
+                stmt.setInt(2, item.getProductId());
+                stmt.setInt(3, item.getQuantity());
+                stmt.setDouble(4, item.getSellprice());
+                stmt.setDouble(5, item.getPricecost());
+                stmt.setDouble(6, item.getTotal());
+                stmt.setDouble(7, item.getProfit());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        }
+
+        conn.commit();
+        return true;
+
+    } catch (SQLException e) {
+        try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+        e.printStackTrace();
+        return false;
+
+    } finally {
+        try { conn.setAutoCommit(true); } catch (SQLException e) { e.printStackTrace(); }
     }
+}
 
     // ================= Delete =================
     public boolean delete(int id) {
@@ -149,3 +202,21 @@ public class InvoiceRepository extends BaseRepository {
         return item;
     }
 }
+
+/*
+{
+  "clientId": 1,
+  "mandoobId": 2,
+  "paid": 100,
+  "items": [
+    {
+      "productId": 5,
+      "quantity": 2
+    },
+    {
+      "productId": 7,
+      "quantity": 1
+    }
+  ]
+}
+*/
