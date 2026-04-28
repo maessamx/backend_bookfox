@@ -84,7 +84,7 @@ public class ProductService {
 
         if (product.getMinStock() < 0)
             return ApiResponse.error("Min stock cannot be negative");
-git restore --staged . 
+
         boolean isCreated = productRepository.create(product);
 
         if (isCreated)
