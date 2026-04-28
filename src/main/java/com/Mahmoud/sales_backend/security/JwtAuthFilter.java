@@ -11,7 +11,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import com.Mahmoud.sales_backend.security.UserContext;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -31,7 +30,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // ================= SKIP AUTH ROUTES =================
-        if (path.startsWith("/auth")) {
+        if (path.startsWith("/auth/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        if (request.getMethod().equals("OPTIONS")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -80,6 +83,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
+             e.printStackTrace();
             sendError(response, "Authentication failed");
         }
     }
