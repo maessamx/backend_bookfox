@@ -23,50 +23,84 @@ public class InvoiceRepository extends BaseRepository {
     }
 
     // ================= Get All =================
-    public List<Invoice> getAll() {
-        List<Map<String, Object>> result = super.getAll("invoices");
+public List<Invoice> getAll() {
+    String sql = """
+        SELECT 
+            i.*,
+            u.name AS mandoob_name,
+            c.name AS client_name
+        FROM invoices i
+        LEFT JOIN users   u ON u.id = i.mandoob_id
+        LEFT JOIN clients c ON c.id = i.client_id
+    """;
+    List<Map<String, Object>> result = query(sql);
 
-        List<Invoice> invoices = new ArrayList<>();
-        for (Map<String, Object> row : result) {
-            invoices.add(mapToInvoice(row));
-        }
-
-        return invoices;
+    List<Invoice> invoices = new ArrayList<>();
+    for (Map<String, Object> row : result) {
+        invoices.add(mapToInvoice(row));
     }
+    return invoices;
+}
 
-    // ================= Get By ID =================
-    public Invoice getById(int id) {
-        Map<String, Object> result =
-            getRowByColumn("invoices", "id", id);
+// ================= Get By ID =================
+public Invoice getById(int id) {
+    String sql = """
+        SELECT 
+            i.*,
+            u.name AS mandoob_name,
+            c.name AS client_name
+        FROM invoices i
+        LEFT JOIN users   u ON u.id = i.mandoob_id
+        LEFT JOIN clients c ON c.id = i.client_id
+        WHERE i.id = ?
+    """;
+    List<Map<String, Object>> result = query(sql, id);
 
-        if (result.isEmpty()) return null;
+    if (result.isEmpty()) return null;
+    return mapToInvoice(result.get(0));
+}
 
-        return mapToInvoice(result);
+// ================= Get By Client =================
+public List<Invoice> getInvoicesByClient(int clientId) {
+    String sql = """
+        SELECT 
+            i.*,
+            u.name AS mandoob_name,
+            c.name AS client_name
+        FROM invoices i
+        LEFT JOIN users   u ON u.id = i.mandoob_id
+        LEFT JOIN clients c ON c.id = i.client_id
+        WHERE i.client_id = ?
+    """;
+    List<Map<String, Object>> result = query(sql, clientId);
+
+    List<Invoice> invoices = new ArrayList<>();
+    for (Map<String, Object> row : result) {
+        invoices.add(mapToInvoice(row));
     }
+    return invoices;
+}
 
-    // ================= Get By Client =================
-    public List<Invoice> getInvoicesByClient(int clientId) {
-        List<Map<String, Object>> result =
-            getByColumn("invoices", "client_id", clientId);
-        List<Invoice> invoices = new ArrayList<>();
-        for (Map<String, Object> row : result) {
-            invoices.add(mapToInvoice(row));
-        }
-        return invoices;
+// ================= Get By Mandoob =================
+public List<Invoice> getInvoicesByMandoob(int mandoobId) {
+    String sql = """
+        SELECT 
+            i.*,
+            u.name AS mandoob_name,
+            c.name AS client_name
+        FROM invoices i
+        LEFT JOIN users   u ON u.id = i.mandoob_id
+        LEFT JOIN clients c ON c.id = i.client_id
+        WHERE i.mandoob_id = ?
+    """;
+    List<Map<String, Object>> result = query(sql, mandoobId);
+
+    List<Invoice> invoices = new ArrayList<>();
+    for (Map<String, Object> row : result) {
+        invoices.add(mapToInvoice(row));
     }
-
-    // ================= Get By Mandoob =================
-    public List<Invoice> getInvoicesByMandoob(int mandoobId) {
-        List<Map<String, Object>> result =
-            getByColumn("invoices", "mandoob_id", mandoobId);
-        List<Invoice> invoices = new ArrayList<>();
-        for (Map<String, Object> row : result) {
-            invoices.add(mapToInvoice(row));
-        }
-
-        return invoices;
-    }
-
+    return invoices;
+}
     // ================= Get Today Invoices Count =================
     public int getTodayInvoicesCount() {
         List<Map<String, Object>> result =
@@ -95,9 +129,8 @@ public class InvoiceRepository extends BaseRepository {
         return super.count("invoices");
     }
 
-    // ================= Create =================
     // ================= Create Invoice With Items (Transaction) =================
-public boolean create(Invoice invoice) {
+    public boolean create(Invoice invoice) {
     try {
         conn.setAutoCommit(false);
 
@@ -170,6 +203,29 @@ public boolean create(Invoice invoice) {
             return false;
         }
     }
+    // ================= Get Total Debt (Admin) =================
+public double getTotalDebt() {
+    String sql = """
+        SELECT COALESCE(SUM(total - paid), 0) AS total_debt
+        FROM invoices
+        WHERE status != 'paid'
+    """;
+    List<Map<String, Object>> result = query(sql);
+    if (result.isEmpty()) return 0;
+    return ((Number) result.get(0).get("total_debt")).doubleValue();
+}
+
+// ================= Get Mandoob Total Debt =================
+public double getMandoobTotalDebt(int mandoobId) {
+    String sql = """
+        SELECT COALESCE(SUM(total - paid), 0) AS total_debt
+        FROM invoices
+        WHERE mandoob_id = ? AND status != 'paid'
+    """;
+    List<Map<String, Object>> result = query(sql, mandoobId);
+    if (result.isEmpty()) return 0;
+    return ((Number) result.get(0).get("total_debt")).doubleValue();
+}
 
     // ================= Invoice Mapper =================
     private Invoice mapToInvoice(Map<String, Object> row) {
@@ -182,6 +238,8 @@ public boolean create(Invoice invoice) {
         invoice.setPaid(((Number) row.get("paid")).doubleValue());
         invoice.setStatus((String) row.get("status"));
         invoice.setCreatedAt((Date) row.get("created_at"));
+        invoice.setMandoobName((String) row.get("mandoob_name"));
+        invoice.setClientName((String) row.get("client_name"));
 
         return invoice;
     }
