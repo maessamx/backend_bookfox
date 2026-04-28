@@ -7,6 +7,8 @@ public class Invoice {
     private int id;
     private int mandoobId;
     private int clientId;
+    private String mandoobName;
+    private String clientName;
     private double total;
     private double paid;
     private String status;

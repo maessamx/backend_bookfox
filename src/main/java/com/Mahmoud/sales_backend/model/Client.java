@@ -8,6 +8,9 @@ public class Client {
     private String name;
     private String address;
     private String phone;
+    private double debt;
+    private double totalpaid;
+    private double totalinvoice;
     private int mandoobId;
     private Date createdAt; 
     private Date updatedAt; 
