@@ -7,5 +7,6 @@ public class Payment {
     private int id;
     private int invoiceId;
     private double amount;
+    private String notes;
     private Date createdAt;
 }

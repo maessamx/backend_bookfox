@@ -103,13 +103,31 @@ public class ClientRepository extends BaseRepository {
     // ================= Get By ID =================
     public Client getById(int id) {
 
-        List<Map<String, Object>> result =
-                query("SELECT * FROM clients WHERE id = ?", id);
+    String sql = """
+        SELECT 
+            c.id,
+            c.name,
+            c.phone,
+            c.address,
+            c.mandoob_id,
+            c.created_at,
+            c.updated_at,
+            COUNT(i.id)                        AS invoice_count,
+            COALESCE(SUM(i.total), 0)          AS total_invoiced,
+            COALESCE(SUM(i.paid), 0)           AS total_paid,
+            COALESCE(SUM(i.total - i.paid), 0) AS debt
+        FROM clients c
+        LEFT JOIN invoices i ON i.client_id = c.id
+        WHERE c.id = ?
+        GROUP BY c.id, c.name, c.phone, c.address, c.mandoob_id, c.created_at, c.updated_at
+    """;
 
-        if (result.isEmpty()) return null;
+    List<Map<String, Object>> result = query(sql, id);
 
-        return mapToClient(result.get(0));
-    }
+    if (result.isEmpty()) return null;
+
+    return mapToClient(result.get(0));
+}
     // ================= Create =================
     public boolean create(Client client) {
         try {
