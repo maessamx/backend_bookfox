@@ -36,6 +36,7 @@ public class ClientController {
     }
     @PostMapping
     public ApiResponse create(@RequestBody Client client) {
+        System.out.println("sssss");
         return clientService.create(client);
     }
     @DeleteMapping("/{id}")

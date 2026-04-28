@@ -3,6 +3,7 @@ package com.Mahmoud.sales_backend.module.Client;
 import org.springframework.stereotype.Service;
 
 import com.Mahmoud.sales_backend.module.Client.ClientRepository;
+import com.Mahmoud.sales_backend.module.Invoice.InvoiceRepository;
 import com.Mahmoud.sales_backend.model.Client;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
 import java.util.Map;
@@ -14,9 +15,11 @@ import com.Mahmoud.sales_backend.security.UserContext;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final InvoiceRepository invoiceRepository;
 
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(ClientRepository clientRepository, InvoiceRepository invoiceRepository) {
         this.clientRepository = clientRepository;
+        this.invoiceRepository = invoiceRepository;
     }
 
     // ================= GetAll =================
@@ -24,15 +27,23 @@ public class ClientService {
         Integer userId = UserContext.getUserId();
         String role = UserContext.getRole();
         List<Client> clients;
+        double totalDebt;
         if ("admin".equals(role)) {
-            clients = clientRepository.getAll();
+            clients = clientRepository.getAllWithDebt();
+            totalDebt = invoiceRepository.getTotalDebt();
         }else{
-            clients = clientRepository.getClientsByMandoob(userId);
+            clients = clientRepository.getClientsByMandoobWithDebt(userId);
+            totalDebt = invoiceRepository.getMandoobTotalDebt(userId);
         }
 
         System.out.println("USER ID: " + userId);
         System.out.println("ROLE: " + role);
-        return ApiResponse.success(clients);
+        Map<String, Object> response = new HashMap<>();
+        response.put("total_clients", clients.size());
+        response.put("total_debt",    totalDebt);
+        response.put("clients",       clients);
+
+        return ApiResponse.success(response);
     }
     // ================= GetByid =================
     public ApiResponse getById(int id) {
@@ -48,11 +59,17 @@ public class ClientService {
     }
     // ================= Create Client =================
     public ApiResponse create(Client client) {
+        Integer userId = UserContext.getUserId();
+        String role = UserContext.getRole();
         if (client.getName() == null || client.getName().isEmpty()) {
         return ApiResponse.error("Name is required");
         }
-        if (client.getMandoobId() <= 0) {
-            return ApiResponse.error("Invalid mandoob id");
+        if ("admin".equals(role)) {
+            if (client.getMandoobId() <= 0) {
+                return ApiResponse.error("Invalid mandoob id");
+            }
+        }else{
+            client.setMandoobId(userId);
         }
         boolean isCreated = clientRepository.create(client);
         if (isCreated) {

@@ -27,6 +27,65 @@ public class ClientRepository extends BaseRepository {
 
         return clients;
     }
+    // ================= Get All With Debt =================
+    public List<Client> getAllWithDebt() {
+        String sql = """
+            SELECT 
+                c.id,
+                c.name,
+                c.phone,
+                c.address,
+                c.mandoob_id,
+                c.created_at,
+                c.updated_at,
+                COUNT(i.id)                        AS invoice_count,
+                COALESCE(SUM(i.total), 0)          AS total_invoiced,
+                COALESCE(SUM(i.paid), 0)           AS total_paid,
+                COALESCE(SUM(i.total - i.paid), 0) AS debt
+            FROM clients c
+            LEFT JOIN invoices i ON i.client_id = c.id
+            GROUP BY c.id
+            ORDER BY debt DESC
+        """;
+        List<Map<String, Object>> result =query(sql);
+        List<Client> clients = new ArrayList<>();
+
+        for (Map<String, Object> row : result) {
+            clients.add(mapToClient(row));
+        }
+        return clients;
+    }
+    public List<Client> getClientsByMandoobWithDebt(int mandoobId) {
+    String sql = """
+        SELECT 
+            c.id,
+            c.name,
+            c.phone,
+            c.address,
+            c.mandoob_id,
+            c.created_at,
+            c.updated_at,
+            COUNT(i.id)                        AS invoice_count,
+            COALESCE(SUM(i.total), 0)          AS total_invoiced,
+            COALESCE(SUM(i.paid), 0)           AS total_paid,
+            COALESCE(SUM(i.total - i.paid), 0) AS debt
+        FROM clients c
+        LEFT JOIN invoices i ON i.client_id = c.id
+        WHERE c.mandoob_id = ?
+        GROUP BY c.id, c.name, c.phone, c.created_at, c.updated_at
+        ORDER BY debt DESC
+    """;
+
+    List<Map<String, Object>> result = query(sql, mandoobId);
+
+    List<Client> clients = new ArrayList<>();
+    for (Map<String, Object> row : result) {
+        clients.add(mapToClient(row));
+    }
+
+    return clients;
+}
+
     // ================= Get All =================
     public List<Client> getClientsByMandoob(int mandoobid) {
 
@@ -86,6 +145,9 @@ public class ClientRepository extends BaseRepository {
         client.setAddress((String) row.get("address"));
         client.setPhone((String) row.get("phone"));
         client.setMandoobId((int) row.get("mandoob_id"));
+        client.setDebt(((Number) row.get("debt")).doubleValue());
+        client.setTotalinvoice(((Number) row.get("total_invoiced")).doubleValue());
+        client.setTotalpaid(((Number) row.get("total_paid")).doubleValue());
         client.setCreatedAt((Date) row.get("created_at"));
         client.setUpdatedAt((Date) row.get("updated_at"));
 
