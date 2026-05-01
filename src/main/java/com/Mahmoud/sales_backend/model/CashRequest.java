@@ -11,5 +11,4 @@ public class CashRequest {
     private Date createdAt;
     private Date approvedAt;
 
-    // getters + setters
 }
