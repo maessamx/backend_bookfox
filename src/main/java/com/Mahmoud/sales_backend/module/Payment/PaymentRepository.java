@@ -23,9 +23,9 @@ public class PaymentRepository extends BaseRepository {
         String sql = """
                     SELECT
                         p.*,
-                        u.name AS mandoob_name
-                        u.id AS mandoob_id
-                        c.name AS client_name
+                        u.name AS mandoob_name,
+                        u.id AS mandoob_id,
+                        c.name AS client_name,
                         c.id AS client_id
                     FROM payments p
                     LEFT JOIN invoices   i ON i.id = p.invoice_id
@@ -46,10 +46,13 @@ public class PaymentRepository extends BaseRepository {
         String sql = """
                     SELECT
                         p.*,
-                        c.name AS client_name
+                        u.name AS mandoob_name,
+                        u.id AS mandoob_id,
+                        c.name AS client_name,
                         c.id AS client_id
                     FROM payments p
-                    LEFT JOIN invoices   i ON i.id = p.invoice_id
+                    LEFT JOIN invoices i ON i.id = p.invoice_id
+                    LEFT JOIN users u ON u.id = i.mandoob_id
                     LEFT JOIN clients c ON c.id = i.client_id
                     WHERE i.mandoob_id = ?
                 """;
