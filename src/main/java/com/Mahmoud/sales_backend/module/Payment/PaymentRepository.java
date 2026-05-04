@@ -66,33 +66,55 @@ public class PaymentRepository extends BaseRepository {
         return payments;
     }
 
+     // ================= Get By ID =================
+     public Payment getById(int Id) {
+     String sql = """
+                    SELECT
+                        p.*,
+                        u.name AS mandoob_name,
+                        u.id AS mandoob_id,
+                        c.name AS client_name,
+                        c.id AS client_id
+                    FROM payments p
+                    LEFT JOIN invoices i ON i.id = p.invoice_id
+                    LEFT JOIN users u ON u.id = i.mandoob_id
+                    LEFT JOIN clients c ON c.id = i.client_id
+                    WHERE p.id = ?
+                """;
+        List<Map<String, Object>> result = query(sql, Id);
+    
+     if (result.isEmpty()) return null;
+    
+     return mapToPayment(result.get(0));
+     }
+     public List<Payment> getPaymentsByInvoice(int invoiceId) {
+     String sql = """
+                    SELECT
+                        p.*,
+                        u.name AS mandoob_name,
+                        u.id AS mandoob_id,
+                        c.name AS client_name,
+                        c.id AS client_id
+                    FROM payments p
+                    LEFT JOIN invoices i ON i.id = p.invoice_id
+                    LEFT JOIN users u ON u.id = i.mandoob_id
+                    LEFT JOIN clients c ON c.id = i.client_id
+                    WHERE p.invoice_id = ?
+                """;
+        List<Map<String, Object>> result = query(sql, invoiceId);
+        List<Payment> payments = new ArrayList<>();
+        for (Map<String, Object> row : result) {
+            payments.add(mapToPayment(row));
+        }
+    
+     return payments;
+     }
+      // ================= Get Count =================
+      public int count() {
+      return super.count("payments");
+      }
     /*
      * 
-     * // ================= Get By ID =================
-     * public Product getById(int id) {
-     * List<Map<String, Object>> result =
-     * query("SELECT * FROM products WHERE id = ?", id);
-     * 
-     * if (result.isEmpty()) return null;
-     * 
-     * return mapToProduct(result.get(0));
-     * }
-     * 
-     * // ================= Get Count =================
-     * public int getCount() {
-     * return super.count("products");
-     * }
-     * 
-     * // ================= Count Low Stock =================
-     * public int countLowStock() {
-     * List<Map<String, Object>> result =
-     * query("SELECT COUNT(*) AS cnt FROM products WHERE quantity <= min_stock");
-     * 
-     * if (result.isEmpty()) return 0;
-     * 
-     * Object cnt = result.get(0).get("cnt");
-     * return cnt != null ? ((Number) cnt).intValue() : 0;
-     * }
      * 
      * // ================= Create =================
      * public boolean create(Product product) {
