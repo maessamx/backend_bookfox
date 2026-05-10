@@ -110,17 +110,21 @@ public class InvoiceService {
         for (InvoiceItem item : invoice.getItems()) {
 
             Product product = productRepository.getById(item.getProductId());
-
-            if (product == null)
+            if (item.getQuantity() <= 0) {
+                return ApiResponse.error("Quantity must be greater than 0");
+            }
+            if (product == null){
                 return ApiResponse.error("Product not found: " + item.getProductId());
-
+            }
+            if(product.getQuantity() < item.getQuantity()){
+                return ApiResponse.error("Insufficient stock for product: " + product.getName());
+            }
             double price = product.getSellprice();
             double itemTotal = price * item.getQuantity();
 
             item.setSellprice(price);
             item.setPricecost(product.getPricecost());
-            double profit = price - product.getPricecost();
-            item.setProfit(profit);
+            item.setProfit((price - product.getPricecost())* item.getQuantity());
             item.setTotal(itemTotal);
 
             total += itemTotal;

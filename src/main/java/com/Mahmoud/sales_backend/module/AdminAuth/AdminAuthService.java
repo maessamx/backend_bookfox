@@ -6,7 +6,9 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.Mahmoud.sales_backend.model.User;
+import com.Mahmoud.sales_backend.security.PasswordUtil;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
+
 @Service
 public class AdminAuthService {
 
@@ -45,7 +47,6 @@ public class AdminAuthService {
         if (password == null || password.isEmpty()) {
             return ApiResponse.error("Password is required");
         }
-        
 
         password = password.trim();
         if (!password.matches("^[a-zA-Z0-9]+$")) {
@@ -59,7 +60,8 @@ public class AdminAuthService {
             return ApiResponse.error("User not found");
         }
 
-        if (!user.getPassword().equals(password)) {
+        // if (!user.getPassword().equals(password)) {
+        if (!PasswordUtil.verifyPassword(password, user.getPasswordHash())) {
             return ApiResponse.error("Invalid password");
         }
 
@@ -72,5 +74,7 @@ public class AdminAuthService {
 
         return ApiResponse.success(data);
     }
+
+    
 
 }

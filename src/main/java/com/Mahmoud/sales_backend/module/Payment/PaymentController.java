@@ -21,4 +21,12 @@ public class PaymentController {
     public ApiResponse getAll() {
         return paymentService.getAll();
     }
+    @GetMapping("/invoice/{invoiceId}")
+    public ApiResponse getByInvoice(@PathVariable int invoiceId) {
+        return paymentService.getByInvoice(invoiceId);
+    }
+    @PostMapping
+    public ApiResponse create(@RequestBody Payment payment) {
+        return paymentService.create(payment);
+    }
 }

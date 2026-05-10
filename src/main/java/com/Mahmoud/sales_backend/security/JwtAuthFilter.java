@@ -34,6 +34,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        //if (path.startsWith("/auth/create")) {
+        //    filterChain.doFilter(request, response);
+        //    return;
+        //}
         if (request.getMethod().equals("OPTIONS")) {
             filterChain.doFilter(request, response);
             return;

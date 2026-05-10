@@ -1,6 +1,7 @@
 package com.Mahmoud.sales_backend.model;
-import lombok.Data;
 import java.util.Date;
+
+import lombok.Data;
 
 @Data
 public class User {
@@ -8,6 +9,7 @@ public class User {
     private String name;
     private String email;
     private String phone;
+    private String passwordHash;
     private String password;
     private String token;
     private String role;

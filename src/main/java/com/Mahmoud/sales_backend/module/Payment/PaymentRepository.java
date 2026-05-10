@@ -1,6 +1,8 @@
 package com.Mahmoud.sales_backend.module.Payment;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -87,7 +89,7 @@ public class PaymentRepository extends BaseRepository {
     
      return mapToPayment(result.get(0));
      }
-     public List<Payment> getPaymentsByInvoice(int invoiceId) {
+     public List<Payment> getByInvoice(int invoiceId) {
      String sql = """
                     SELECT
                         p.*,
@@ -113,66 +115,103 @@ public class PaymentRepository extends BaseRepository {
       public int count() {
       return super.count("payments");
       }
-    /*
-     * 
-     * 
-     * // ================= Create =================
-     * public boolean create(Product product) {
-     * try {
-     * Map<String, Object> data = new LinkedHashMap<>();
-     * data.put("name", product.getName());
-     * data.put("price_cost", product.getPricecost());
-     * data.put("sell_price", product.getSellprice());
-     * data.put("quantity", product.getQuantity());
-     * data.put("min_stock", product.getMinStock());
-     * 
-     * return insert("products", data) > 0;
-     * } catch (Exception e) {
-     * System.out.println("DB ERROR: " + e.getMessage());
-     * return false;
-     * }
-     * }
-     * 
-     * // ================= Update =================
-     * public boolean update(Product product) {
-     * try {
-     * Map<String, Object> data = new LinkedHashMap<>();
-     * data.put("name", product.getName());
-     * data.put("price_cost", product.getPricecost());
-     * data.put("sell_price", product.getSellprice());
-     * data.put("quantity", product.getQuantity());
-     * data.put("min_stock", product.getMinStock());
-     * 
-     * return update("products", data, "id", product.getId()) > 0;
-     * } catch (Exception e) {
-     * System.out.println("DB ERROR: " + e.getMessage());
-     * return false;
-     * }
-     * }
-     * 
-     * // ================= Delete =================
-     * public boolean delete(int id) {
-     * try {
-     * return delete("products", "id", id) > 0;
-     * } catch (Exception e) {
-     * e.printStackTrace();
-     * return false;
-     * }
-     * }
-     * 
-     * // ================= Increase Quantity =================
-     * public boolean increaseQuantity(int id, int qty) {
-     * String sql = "UPDATE products SET quantity = quantity + ? WHERE id = ?";
-     * try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-     * stmt.setInt(1, qty);
-     * stmt.setInt(2, id);
-     * return stmt.executeUpdate() > 0;
-     * } catch (SQLException e) {
-     * e.printStackTrace();
-     * return false;
-     * }
-     * }
-     */
+
+      // ================= Create (Transaction) =================
+public boolean create(Payment payment) {
+    try {
+        conn.setAutoCommit(false);
+
+        // 1) Insert payment
+        String insertSql = "INSERT INTO payments (invoice_id, amount, notes) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+            stmt.setInt(1, payment.getInvoiceId());
+            stmt.setDouble(2, payment.getAmount());
+            stmt.setString(3, payment.getNotes());
+            stmt.executeUpdate();
+        }
+
+        // 2) Update invoice paid + status
+        String updateSql = """
+            UPDATE invoices
+            SET
+                paid = paid + ?,
+                status = CASE
+                    WHEN paid + ? >= total THEN 'paid'
+                    ELSE 'partial'
+                END
+            WHERE id = ? AND (paid + ?) <= total
+        """;
+        try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
+            stmt.setDouble(1, payment.getAmount());
+            stmt.setDouble(2, payment.getAmount());
+            stmt.setInt(3, payment.getInvoiceId());
+            stmt.setDouble(4, payment.getAmount());
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                // amount بيعدي الـ total أو invoice مش موجود
+                conn.rollback();
+                return false;
+            }
+        }
+
+        conn.commit();
+        return true;
+
+    } catch (SQLException e) {
+        try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+        e.printStackTrace();
+        return false;
+
+    } finally {
+        try { conn.setAutoCommit(true); } catch (SQLException e) { e.printStackTrace(); }
+    }
+}
+// ================= Get Today Payments =================
+public List<Payment> getTodayPayments() {
+    String sql = """
+        SELECT
+            p.*,
+            u.name AS mandoob_name,
+            u.id AS mandoob_id,
+            c.name AS client_name,
+            c.id AS client_id
+        FROM payments p
+        LEFT JOIN invoices i ON i.id = p.invoice_id
+        LEFT JOIN users u ON u.id = i.mandoob_id
+        LEFT JOIN clients c ON c.id = i.client_id
+        WHERE DATE(p.created_at) = CURDATE()
+    """;
+    List<Map<String, Object>> result = query(sql);
+    List<Payment> payments = new ArrayList<>();
+    for (Map<String, Object> row : result) {
+        payments.add(mapToPayment(row));
+    }
+    return payments;
+}
+
+public List<Payment> getTodayPaymentsByMandoob(int mandoobId) {
+    String sql = """
+        SELECT
+            p.*,
+            u.name AS mandoob_name,
+            u.id AS mandoob_id,
+            c.name AS client_name,
+            c.id AS client_id
+        FROM payments p
+        LEFT JOIN invoices i ON i.id = p.invoice_id
+        LEFT JOIN users u ON u.id = i.mandoob_id
+        LEFT JOIN clients c ON c.id = i.client_id
+        WHERE DATE(p.created_at) = CURDATE()
+          AND i.mandoob_id = ?
+    """;
+    List<Map<String, Object>> result = query(sql, mandoobId);
+    List<Payment> payments = new ArrayList<>();
+    for (Map<String, Object> row : result) {
+        payments.add(mapToPayment(row));
+    }
+    return payments;
+}
     // ================= Mapper =================
     private Payment mapToPayment(Map<String, Object> row) {
         Payment product = new Payment();

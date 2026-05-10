@@ -1,15 +1,16 @@
 package com.Mahmoud.sales_backend.module.Client;
 
-import org.springframework.stereotype.Service;
-
-import com.Mahmoud.sales_backend.module.Client.ClientRepository;
-import com.Mahmoud.sales_backend.module.Invoice.InvoiceRepository;
-import com.Mahmoud.sales_backend.model.Client;
-import com.Mahmoud.sales_backend.shared.ApiResponse;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.Mahmoud.sales_backend.model.Client;
+import com.Mahmoud.sales_backend.module.Invoice.InvoiceRepository;
 import com.Mahmoud.sales_backend.security.UserContext;
+import com.Mahmoud.sales_backend.shared.ApiResponse;
+import com.Mahmoud.sales_backend.shared.PhoneValidator;
 
 @Service
 public class ClientService {
@@ -63,6 +64,9 @@ public class ClientService {
         String role = UserContext.getRole();
         if (client.getName() == null || client.getName().isEmpty()) {
         return ApiResponse.error("Name is required");
+        }
+        if (!PhoneValidator.isValidEgyptPhone(client.getPhone())) {
+            return ApiResponse.error("Invalid Egyptian phone number");
         }
         if ("admin".equals(role)) {
             if (client.getMandoobId() <= 0) {

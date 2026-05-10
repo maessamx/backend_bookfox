@@ -135,12 +135,6 @@ public List<Invoice> getInvoicesByMandoob(int mandoobId) {
         conn.setAutoCommit(false);
 
         // 1) Insert invoice & get generated ID
-        Map<String, Object> invoiceData = new LinkedHashMap<>();
-        invoiceData.put("mandoob_id", invoice.getMandoobId());
-        invoiceData.put("client_id",  invoice.getClientId());
-        invoiceData.put("total",      invoice.getTotal());
-        invoiceData.put("paid",       invoice.getPaid());
-        invoiceData.put("status",     invoice.getStatus());
 
         String invoiceSql = "INSERT INTO invoices (mandoob_id, client_id, total, paid, status) " +
                             "VALUES (?, ?, ?, ?, ?)";
@@ -181,6 +175,28 @@ public List<Invoice> getInvoicesByMandoob(int mandoobId) {
             stmt.executeBatch();
         }
 
+        // ================= DECREASE STOCK =================
+
+        String stockSql =
+            "UPDATE products SET quantity = quantity - ? " +
+            "WHERE id = ? AND quantity >= ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(stockSql)) {
+
+            for (InvoiceItem item : invoice.getItems()) {
+
+                stmt.setInt(1, item.getQuantity());
+                stmt.setInt(2, item.getProductId());
+                stmt.setInt(3, item.getQuantity());
+
+                int affected = stmt.executeUpdate();
+
+                if (affected == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+        }
         conn.commit();
         return true;
 
