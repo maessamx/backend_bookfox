@@ -1,11 +1,14 @@
 package com.Mahmoud.sales_backend.module.MandoobStock;
 
-import com.Mahmoud.sales_backend.shared.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.Mahmoud.sales_backend.model.Invoice;
 import com.Mahmoud.sales_backend.model.MandoobStock;
+import com.Mahmoud.sales_backend.shared.ApiResponse;
 
 @RestController
 @RequestMapping("/mandoob-stock")

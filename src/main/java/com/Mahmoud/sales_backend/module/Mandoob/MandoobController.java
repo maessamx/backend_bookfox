@@ -30,7 +30,7 @@ public class MandoobController {
     public ApiResponse get(@PathVariable int id) {
         return mandoobService.get(id);
     }
-    // PUT /mandoobs/{id}/toggle-status
+    // POST /mandoobs/{id}/toggle-status
 @PostMapping("/{id}/toggle-status")
 public ApiResponse toggleStatus(@PathVariable int id) {
     return mandoobService.toggleStatus(id);

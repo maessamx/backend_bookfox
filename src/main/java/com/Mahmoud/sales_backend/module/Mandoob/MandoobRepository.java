@@ -20,7 +20,7 @@ public class MandoobRepository extends BaseRepository {
 
     // ================= Get All =================
     public List<User> getAll() {
-        String sql = "SELECT id, name, email, role, status, created_at FROM users WHERE role = 'mandoob'";
+        String sql = "SELECT id, name, email,phone, role, status, created_at FROM users WHERE role = 'mandoob'";
         List<Map<String, Object>> result = query(sql);
 
         List<User> mandoobs = new ArrayList<>();
@@ -66,7 +66,10 @@ public User getById(int id) {
     // ================= Toggle Status =================
 public boolean toggleStatus(int id) {
     try {
-        return update("users", Map.of("status", "ABS(status - 1)"), "id", id) > 0;
+        return execute(
+        "UPDATE users SET status = ABS(status - 1) WHERE id = ?",
+        id
+    ) > 0;
     } catch (Exception e) {
         e.printStackTrace();
         return false;
@@ -82,7 +85,7 @@ public boolean toggleStatus(int id) {
         user.setEmail((String) row.get("email"));
         user.setRole((String) row.get("role"));
         user.setCreatedAt((Date) row.get("created_at"));
-
+        user.setPhone((String) row.get("phone"));
         // ✅ status ممكنييجي Boolean أو Number حسب نوع الـ column
         Object status = row.get("status");
         if (status instanceof Boolean) {

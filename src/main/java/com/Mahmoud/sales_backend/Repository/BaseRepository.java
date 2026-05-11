@@ -123,6 +123,24 @@ public class BaseRepository {
 
         return 0;
     }
+     // ================= EXECUTE =================
+public int execute(String sql, Object... params) {
+
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        for (int i = 0; i < params.length; i++) {
+            stmt.setObject(i + 1, params[i]);
+        }
+
+        return stmt.executeUpdate();
+
+    } catch (SQLException e) {
+
+        e.printStackTrace();
+    }
+
+    return 0;
+}
 
     // ================= INSERT =================
     public int insert(String table, Map<String, Object> data) {
@@ -224,7 +242,7 @@ public class BaseRepository {
                 Map<String, Object> row = new HashMap<>();
 
                 for (int i = 1; i <= columns; i++) {
-                    row.put(meta.getColumnName(i), rs.getObject(i));
+                    row.put(meta.getColumnLabel(i), rs.getObject(i));
                 }
 
                 list.add(row);
