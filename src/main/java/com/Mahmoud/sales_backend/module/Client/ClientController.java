@@ -26,6 +26,7 @@ public class ClientController {
     public ApiResponse getAll() {
         return clientService.getAll();
     }
+    // GET - clients/mandoob/{mandoobId}
     @GetMapping("/mandoob/{mandoobId}")
     public ApiResponse getByMandoob(@PathVariable int mandoobId) {
         return clientService.getByMandoob(mandoobId);

@@ -9,6 +9,8 @@ public class MandoobStock {
     private int mandoobId;
     private String mandoobName;
     private int productid;
+    private double sellprice;
+    private double pricecost;
     private String productName;
     private int quantity;
     private Date createdAt;

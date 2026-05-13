@@ -2,7 +2,11 @@ package com.Mahmoud.sales_backend.module.CashRequest;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.Mahmoud.sales_backend.model.CashRequest;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
@@ -41,14 +45,14 @@ public class CashRequestController {
         return cashRequestService.create(cashRequest);
     }
 
-    // PUT /cash-requests/{id}/approve
-    @PutMapping("/{id}/approve")
+    // POST /cash-requests/{id}/approve
+    @PostMapping("/{id}/approve")
     public ApiResponse approve(@PathVariable int id) {
         return cashRequestService.approve(id);
     }
 
-    // PUT /cash-requests/{id}/reject
-    @PutMapping("/{id}/reject")
+    // POST /cash-requests/{id}/reject
+    @PostMapping("/{id}/reject")
     public ApiResponse reject(@PathVariable int id, @RequestBody CashRequest cashRequest) {
         return cashRequestService.reject(id, cashRequest);
     }

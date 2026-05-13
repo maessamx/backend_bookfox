@@ -7,9 +7,9 @@ public class Dashboard {
     private int    invoicesToday;
     private double collectionsToday;
     private double totalDebts;
+    private double totalDebtsmandoob;
     private int    lowStockProducts;
 
-    // admin only
     private int    totalClients;
     private int    totalProducts;
     private int    pendingCashRequests;

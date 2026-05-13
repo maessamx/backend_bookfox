@@ -1,15 +1,14 @@
 package com.Mahmoud.sales_backend.module.Product;
 
-import com.Mahmoud.sales_backend.model.Product;
-import com.Mahmoud.sales_backend.shared.ApiResponse;
-
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
+import com.Mahmoud.sales_backend.model.Product;
 import com.Mahmoud.sales_backend.security.UserContext;
+import com.Mahmoud.sales_backend.shared.ApiResponse;
 
 @Service
 public class ProductService {
@@ -100,6 +99,12 @@ public class ProductService {
 
         if (product.getName() == null || product.getName().isBlank())
             return ApiResponse.error("Name is required");
+        if (product.getSellprice() < product.getPricecost())
+            return ApiResponse.error("Sell price must be greater than cost price");
+        if (product.getQuantity() < 0)
+            return ApiResponse.error("Quantity cannot be negative");
+        if (product.getMinStock() < 0)
+            return ApiResponse.error("Min stock cannot be negative");
 
         if (product.getSellprice() <= 0)
             return ApiResponse.error("Sell price must be greater than 0");

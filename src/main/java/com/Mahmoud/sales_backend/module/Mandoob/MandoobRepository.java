@@ -20,15 +20,58 @@ public class MandoobRepository extends BaseRepository {
 
     // ================= Get All =================
     public List<User> getAll() {
-        String sql = "SELECT id, name, email,phone, role, status, created_at FROM users WHERE role = 'mandoob'";
-        List<Map<String, Object>> result = query(sql);
+    String sql = """
+        SELECT 
+    u.id,
+    u.name,
+    u.email,
+    u.phone,
+    u.role,
+    u.status,
+    u.created_at,
 
-        List<User> mandoobs = new ArrayList<>();
-        for (Map<String, Object> row : result) {
-            mandoobs.add(mapToUser(row));
-        }
-        return mandoobs;
+    COALESCE(SUM(i.paid), 0) AS total_paid_collected,
+
+    COALESCE((
+        SELECT SUM(cr.amount)
+        FROM cash_requests cr
+        WHERE cr.mandoob_id = u.id
+          AND cr.status = 'approved'
+    ), 0) AS total_delivered,
+
+    (
+        COALESCE(SUM(i.paid), 0)
+        -
+        COALESCE((
+            SELECT SUM(cr.amount)
+            FROM cash_requests cr
+            WHERE cr.mandoob_id = u.id
+              AND cr.status = 'approved'
+        ), 0)
+    ) AS net_balance
+
+FROM users u
+
+LEFT JOIN invoices i 
+    ON i.mandoob_id = u.id
+
+WHERE u.role = 'mandoob'
+
+GROUP BY 
+    u.id, u.name, u.email, u.phone, u.role, u.status, u.created_at
+
+ORDER BY net_balance DESC
+    """;
+
+    List<Map<String, Object>> result = query(sql);
+
+    List<User> mandoobs = new ArrayList<>();
+    for (Map<String, Object> row : result) {
+        mandoobs.add(mapToUser(row));
     }
+
+    return mandoobs;
+}
 
     // ================= Find By Email =================
     public User findByEmail(String email) {
@@ -82,11 +125,14 @@ public boolean toggleStatus(int id) {
 
         user.setId(((Number) row.get("id")).intValue());
         user.setName((String) row.get("name"));
+        Object bal = row.get("net_balance");
+        if(bal !=null){
+            user.setNet(((Number) row.get("net_balance")).doubleValue());
+        }
         user.setEmail((String) row.get("email"));
         user.setRole((String) row.get("role"));
         user.setCreatedAt((Date) row.get("created_at"));
         user.setPhone((String) row.get("phone"));
-        // ✅ status ممكنييجي Boolean أو Number حسب نوع الـ column
         Object status = row.get("status");
         if (status instanceof Boolean) {
             user.setStatus((Boolean) status ? 1 : 0);

@@ -26,7 +26,9 @@ public class MandoobStockRepository extends BaseRepository {
             SELECT
                 ms.*,
                 u.name  AS mandoob_name,
-                p.name  AS product_name
+                p.name  AS product_name,
+                p.price_cost AS price_cost,
+                p.sell_price AS sell_price
             FROM mandoob_stock ms
             LEFT JOIN users    u ON u.id = ms.mandoob_id
             LEFT JOIN products p ON p.id = ms.product_id
@@ -46,7 +48,9 @@ public class MandoobStockRepository extends BaseRepository {
             SELECT
                 ms.*,
                 u.name  AS mandoob_name,
-                p.name  AS product_name
+                p.name  AS product_name,
+                p.sell_price AS sell_price,
+                p.price_cost AS price_cost
             FROM mandoob_stock ms
             LEFT JOIN users    u ON u.id = ms.mandoob_id
             LEFT JOIN products p ON p.id = ms.product_id
@@ -62,18 +66,21 @@ public class MandoobStockRepository extends BaseRepository {
     }
 
     // ================= Get By ID =================
-    public MandoobStock getById(int id) {
+    public MandoobStock getByProductId(int id,int mandoobid) {
         String sql = """
             SELECT
                 ms.*,
                 u.name  AS mandoob_name,
-                p.name  AS product_name
+                p.name  AS product_name,
+                p.sell_price AS sell_price,
+                p.price_cost AS price_cost
             FROM mandoob_stock ms
             LEFT JOIN users    u ON u.id = ms.mandoob_id
             LEFT JOIN products p ON p.id = ms.product_id
-            WHERE ms.id = ?
+            WHERE ms.product_id = ?
+            AND   ms.mandoob_id = ?
         """;
-        List<Map<String, Object>> result = query(sql, id);
+        List<Map<String, Object>> result = query(sql, id,mandoobid);
 
         if (result.isEmpty()) return null;
         return mapToMandoobStock(result.get(0));
@@ -192,6 +199,8 @@ public class MandoobStockRepository extends BaseRepository {
         stock.setProductid(((Number) row.get("product_id")).intValue());
         stock.setQuantity(((Number) row.get("quantity")).intValue());
         stock.setMandoobName((String) row.get("mandoob_name"));
+        stock.setSellprice(((Number) row.get("sell_price")).doubleValue());
+        stock.setPricecost(((Number) row.get("price_cost")).doubleValue());
         stock.setProductName((String) row.get("product_name"));
         stock.setCreatedAt((Date) row.get("created_at"));
         stock.setUpdatedAt((Date) row.get("updated_at"));

@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.Mahmoud.sales_backend.model.CashRequest;
-import com.Mahmoud.sales_backend.module.Product.ProductRepository;
+import com.Mahmoud.sales_backend.module.Dashboard.DashboardRepository;
 import com.Mahmoud.sales_backend.security.UserContext;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
 
@@ -13,9 +13,11 @@ import com.Mahmoud.sales_backend.shared.ApiResponse;
 public class CashRequestService {
 
     private final CashRequestRepository cashRequestRepository;
+    private final DashboardRepository dashboardRepository;
 
-    public CashRequestService(CashRequestRepository cashRequestRepository) {
+    public CashRequestService(CashRequestRepository cashRequestRepository, DashboardRepository dashboardRepository) {
         this.cashRequestRepository = cashRequestRepository;
+        this.dashboardRepository = dashboardRepository;
     }
 
     // ================= GetAll =================
@@ -57,10 +59,20 @@ public class CashRequestService {
 
     // ================= create =================
     public ApiResponse create(CashRequest cashRequest) {
+        if ("admin".equals(UserContext.getRole()))
+            return ApiResponse.error("Not allowed");
         if (cashRequest.getAmount() <= 0)
             return ApiResponse.error("Amount must be greater than 0");
 
-        cashRequest.setMandoobId(UserContext.getUserId());
+        Integer userId = UserContext.getUserId();
+
+        double balance = dashboardRepository.getMandoobNetBalance(userId);
+
+        if (balance < cashRequest.getAmount()) {
+            return ApiResponse.error(
+                    "Insufficient balance. Available balance: " + balance);
+        }
+        cashRequest.setMandoobId(userId);
 
         boolean created = cashRequestRepository.create(cashRequest);
         if (!created)
@@ -105,7 +117,7 @@ public class CashRequestService {
         if (currentStatus == null)
             return ApiResponse.error("Request not found");
 
-        if (!"pending".equals(currentStatus))  // ✅ الشرط الصح
+        if (!"pending".equals(currentStatus)) // ✅ الشرط الصح
             return ApiResponse.error("Cannot reject — request is already: " + currentStatus);
 
         boolean rejected = cashRequestRepository.reject(id, UserContext.getUserId(), cashRequest.getNotes());
@@ -115,5 +127,3 @@ public class CashRequestService {
         return ApiResponse.success("Request rejected successfully");
     }
 }
-
-

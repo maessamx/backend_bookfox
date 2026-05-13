@@ -36,6 +36,7 @@ public class ClientRepository extends BaseRepository {
                 c.phone,
                 c.address,
                 c.mandoob_id,
+                u.name AS mandoob_name,
                 c.created_at,
                 c.updated_at,
                 COUNT(i.id)                        AS invoice_count,
@@ -43,6 +44,7 @@ public class ClientRepository extends BaseRepository {
                 COALESCE(SUM(i.paid), 0)           AS total_paid,
                 COALESCE(SUM(i.total - i.paid), 0) AS debt
             FROM clients c
+            LEFT JOIN users u ON u.id = c.mandoob_id
             LEFT JOIN invoices i ON i.client_id = c.id
             GROUP BY c.id
             ORDER BY debt DESC
@@ -63,6 +65,7 @@ public class ClientRepository extends BaseRepository {
             c.phone,
             c.address,
             c.mandoob_id,
+            u.name AS mandoob_name,
             c.created_at,
             c.updated_at,
             COUNT(i.id)                        AS invoice_count,
@@ -70,6 +73,7 @@ public class ClientRepository extends BaseRepository {
             COALESCE(SUM(i.paid), 0)           AS total_paid,
             COALESCE(SUM(i.total - i.paid), 0) AS debt
         FROM clients c
+        LEFT JOIN users u ON u.id = c.mandoob_id
         LEFT JOIN invoices i ON i.client_id = c.id
         WHERE c.mandoob_id = ?
         GROUP BY c.id, c.name, c.phone, c.created_at, c.updated_at
@@ -109,6 +113,7 @@ public class ClientRepository extends BaseRepository {
             c.name,
             c.phone,
             c.address,
+            u.name AS mandoob_name,
             c.mandoob_id,
             c.created_at,
             c.updated_at,
@@ -117,6 +122,7 @@ public class ClientRepository extends BaseRepository {
             COALESCE(SUM(i.paid), 0)           AS total_paid,
             COALESCE(SUM(i.total - i.paid), 0) AS debt
         FROM clients c
+        LEFT JOIN users u ON u.id = c.mandoob_id
         LEFT JOIN invoices i ON i.client_id = c.id
         WHERE c.id = ?
         GROUP BY c.id, c.name, c.phone, c.address, c.mandoob_id, c.created_at, c.updated_at
@@ -162,6 +168,7 @@ public class ClientRepository extends BaseRepository {
         client.setName((String) row.get("name"));
         client.setAddress((String) row.get("address"));
         client.setPhone((String) row.get("phone"));
+        client.setMandoobName((String) row.get("mandoob_name"));
         client.setMandoobId((int) row.get("mandoob_id"));
         client.setDebt(((Number) row.get("debt")).doubleValue());
         client.setTotalinvoice(((Number) row.get("total_invoiced")).doubleValue());

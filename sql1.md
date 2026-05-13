@@ -28,8 +28,6 @@ CREATE TABLE clients (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-
     FOREIGN KEY (mandoob_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_mandoob (mandoob_id)
 );

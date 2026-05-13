@@ -97,7 +97,7 @@ public class ClientService {
     public ApiResponse getByMandoob(int mandoobId) {
         String role = UserContext.getRole();
         if ("admin".equals(role)) {
-            List<Client> clients = clientRepository.getClientsByMandoob(mandoobId);
+            List<Client> clients = clientRepository.getClientsByMandoobWithDebt(mandoobId);
             return ApiResponse.success(clients);
         }
         return ApiResponse.error("not allowed");

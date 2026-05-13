@@ -1,24 +1,30 @@
 package com.Mahmoud.sales_backend.module.Invoice;
 
-import com.Mahmoud.sales_backend.model.Invoice;
-import com.Mahmoud.sales_backend.model.Product;
-import com.Mahmoud.sales_backend.model.InvoiceItem;
-import com.Mahmoud.sales_backend.shared.ApiResponse;
-import com.Mahmoud.sales_backend.security.UserContext;
-import org.springframework.stereotype.Service;
-import com.Mahmoud.sales_backend.module.Product.ProductRepository;
-
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.Mahmoud.sales_backend.model.Invoice;
+import com.Mahmoud.sales_backend.model.InvoiceItem;
+import com.Mahmoud.sales_backend.model.MandoobStock;
+import com.Mahmoud.sales_backend.model.Product;
+import com.Mahmoud.sales_backend.module.Mandoob.MandoobRepository;
+import com.Mahmoud.sales_backend.module.MandoobStock.MandoobStockRepository;
+import com.Mahmoud.sales_backend.module.Product.ProductRepository;
+import com.Mahmoud.sales_backend.security.UserContext;
+import com.Mahmoud.sales_backend.shared.ApiResponse;
 
 @Service
 public class InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final ProductRepository productRepository;
+    private final MandoobStockRepository mandoobStockRepository;
 
-    public InvoiceService(InvoiceRepository invoiceRepository,ProductRepository productRepository) {
+    public InvoiceService(InvoiceRepository invoiceRepository,MandoobStockRepository mandoobStockRepository,ProductRepository productRepository) {
         this.invoiceRepository = invoiceRepository;
         this.productRepository =productRepository;
+        this.mandoobStockRepository =mandoobStockRepository;
     }
 
     // ================= GetAll =================
@@ -65,6 +71,11 @@ public class InvoiceService {
 
     // ================= GetByMandoob =================
     public ApiResponse getByMandoob(int mandoobId) {
+        String role = UserContext.getRole();
+
+        if (!"admin".equals(role)) {
+            return ApiResponse.error("not allowed");
+        }
         if (mandoobId <= 0) {
             return ApiResponse.error("Invalid mandoob ID");
         }
@@ -94,12 +105,15 @@ public class InvoiceService {
 
     // ================= Create =================
     public ApiResponse create(Invoice invoice) {
+        String role = UserContext.getRole();
 
+        if ("admin".equals(role)) {
+            return ApiResponse.error("not allowed");
+        }
+        Integer userId = UserContext.getUserId();
+        invoice.setMandoobId(userId);
         if (invoice.getClientId() <= 0)
             return ApiResponse.error("Invalid client ID");
-
-        if (invoice.getMandoobId() <= 0)
-            return ApiResponse.error("Invalid mandoob ID");
 
         if (invoice.getItems() == null || invoice.getItems().isEmpty())
             return ApiResponse.error("Invoice must have items");
@@ -109,7 +123,7 @@ public class InvoiceService {
         // ================= PROCESS ITEMS =================
         for (InvoiceItem item : invoice.getItems()) {
 
-            Product product = productRepository.getById(item.getProductId());
+            MandoobStock product = mandoobStockRepository.getByProductId(item.getProductId(),userId);
             if (item.getQuantity() <= 0) {
                 return ApiResponse.error("Quantity must be greater than 0");
             }
@@ -117,12 +131,16 @@ public class InvoiceService {
                 return ApiResponse.error("Product not found: " + item.getProductId());
             }
             if(product.getQuantity() < item.getQuantity()){
-                return ApiResponse.error("Insufficient stock for product: " + product.getName());
+                return ApiResponse.error("Insufficient stock for product: " + product.getProductName());
             }
-            double price = product.getSellprice();
+            double price = item.getSellPrice();
+            double priceitem = product.getSellprice();
+            if(price < priceitem){
+                return ApiResponse.error("price must greater than: " + priceitem);
+            }
+            
             double itemTotal = price * item.getQuantity();
 
-            item.setSellprice(price);
             item.setPricecost(product.getPricecost());
             item.setProfit((price - product.getPricecost())* item.getQuantity());
             item.setTotal(itemTotal);

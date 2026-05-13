@@ -1,20 +1,20 @@
 package com.Mahmoud.sales_backend.module.Invoice;
 
-import com.Mahmoud.sales_backend.Repository.BaseRepository;
-import com.Mahmoud.sales_backend.model.Invoice;
-import com.Mahmoud.sales_backend.model.InvoiceItem;
-import org.springframework.stereotype.Repository;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
+
+import org.springframework.stereotype.Repository;
+
+import com.Mahmoud.sales_backend.Repository.BaseRepository;
+import com.Mahmoud.sales_backend.model.Invoice;
+import com.Mahmoud.sales_backend.model.InvoiceItem;
 @Repository
 public class InvoiceRepository extends BaseRepository {
 
@@ -114,15 +114,32 @@ public List<Invoice> getInvoicesByMandoob(int mandoobId) {
 
     // ================= Get Invoice Items =================
     public List<InvoiceItem> getInvoiceItems(int invoiceId) {
-        List<Map<String, Object>> result =
-            getByColumn("invoice_items", "invoice_id", invoiceId);
-        List<InvoiceItem> items = new ArrayList<>();
-        for (Map<String, Object> row : result) {
-            items.add(mapToInvoiceItem(row));
-        }
 
-        return items;
+    String sql = """
+        SELECT 
+            ii.*,
+            p.name AS product_name
+        FROM invoice_items ii
+        LEFT JOIN products p 
+            ON p.id = ii.product_id
+        WHERE ii.invoice_id = ?
+    """;
+
+    List<Map<String, Object>> result = query(sql, invoiceId);
+
+    List<InvoiceItem> items = new ArrayList<>();
+
+    for (Map<String, Object> row : result) {
+        InvoiceItem item = mapToInvoiceItem(row);
+
+        // ضيف اسم المنتج
+        item.setProductName((String) row.get("product_name"));
+
+        items.add(item);
     }
+
+    return items;
+}
 
     // ================= Count =================
     public int count() {
@@ -166,7 +183,7 @@ public List<Invoice> getInvoicesByMandoob(int mandoobId) {
                 stmt.setInt(1, invoiceId);
                 stmt.setInt(2, item.getProductId());
                 stmt.setInt(3, item.getQuantity());
-                stmt.setDouble(4, item.getSellprice());
+                stmt.setDouble(4, item.getSellPrice());
                 stmt.setDouble(5, item.getPricecost());
                 stmt.setDouble(6, item.getTotal());
                 stmt.setDouble(7, item.getProfit());
@@ -178,8 +195,8 @@ public List<Invoice> getInvoicesByMandoob(int mandoobId) {
         // ================= DECREASE STOCK =================
 
         String stockSql =
-            "UPDATE products SET quantity = quantity - ? " +
-            "WHERE id = ? AND quantity >= ?";
+            "UPDATE mandoob_stock SET quantity = quantity - ? " +
+            "WHERE product_id = ? AND quantity >= ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(stockSql)) {
 
@@ -269,7 +286,7 @@ public double getMandoobTotalDebt(int mandoobId) {
         item.setProductId(((Number) row.get("product_id")).intValue());
         item.setQuantity(((Number) row.get("quantity")).intValue());
         item.setPricecost(((Number) row.get("price_cost")).doubleValue());
-        item.setSellprice(((Number) row.get("sell_price")).doubleValue());
+        item.setSellPrice(((Number) row.get("sell_price")).doubleValue());
         item.setTotal(((Number) row.get("total")).doubleValue());
         item.setProfit(((Number) row.get("profit")).doubleValue());
 

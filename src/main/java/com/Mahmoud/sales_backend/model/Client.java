@@ -13,6 +13,7 @@ public class Client {
     private double totalpaid;
     private double totalinvoice;
     private Integer mandoobId;
+    private String mandoobName;
     private Date createdAt; 
     private Date updatedAt; 
 }

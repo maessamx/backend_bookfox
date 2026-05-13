@@ -6,9 +6,10 @@ public class InvoiceItem {
     private int invoiceId;
     private int productId;
     private int quantity;
+    private String productName;
 
     private double pricecost;
-    private double sellprice;
+    private double sellPrice;
     private double profit;
     private double total;
 }
