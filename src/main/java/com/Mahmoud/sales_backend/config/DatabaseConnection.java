@@ -6,27 +6,38 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
 
-    // instance واحدة فقط
     private static DatabaseConnection instance;
-
     private Connection connection;
 
-    // بيانات الاتصال
-    private static final String URL = "jdbc:mysql://localhost:3306/mandoob2";
-    private static final String USER = "root";
-    private static final String PASSWORD = "";
-
-    // Constructor private عشان ممنوع إنشاء object من بره
     private DatabaseConnection() {
         try {
-            this.connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            // بياخد البيانات من Environment Variables بدل hardcoded
+            String host     = System.getenv("MYSQLHOST");
+            String port     = System.getenv("MYSQLPORT");
+            String database = System.getenv("MYSQLDATABASE");
+            String user     = System.getenv("MYSQLUSER");
+            String password = System.getenv("MYSQLPASSWORD");
+
+            // Fallback للـ local development
+            if (host == null) {
+                host     = "localhost";
+                port     = "3306";
+                database = "mandoob2";
+                user     = "root";
+                password = "";
+            }
+
+            String url = "jdbc:mysql://" + host + ":" + port + "/" + database
+                       + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+
+            this.connection = DriverManager.getConnection(url, user, password);
             System.out.println("Database Connected Successfully");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Singleton method
     public static DatabaseConnection getInstance() {
         if (instance == null) {
             instance = new DatabaseConnection();
@@ -34,7 +45,6 @@ public class DatabaseConnection {
         return instance;
     }
 
-    // ترجع الـ connection
     public Connection getConnection() {
         return connection;
     }
