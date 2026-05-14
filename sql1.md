@@ -126,7 +126,7 @@ CREATE TABLE mandoob_stock (
     mandoob_id INT NOT NULL,
     product_id INT NOT NULL,
     
-    quantity INT DEFAULT 0,  -- الكمية الموجودة مع المندوب حالياً
+    quantity INT DEFAULT 0,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
