@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_PATHS =
-            Arrays.asList("/auth/login", "/auth/register");
+            Arrays.asList("/auth/login", "/auth/register","/auth/verify-token");
 
     private static final List<String> PUBLIC_CATALOG =
             Arrays.asList("/books", "/supplies", "/authors");

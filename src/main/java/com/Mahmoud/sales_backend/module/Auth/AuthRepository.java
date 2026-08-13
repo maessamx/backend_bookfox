@@ -32,6 +32,19 @@ public class AuthRepository extends BaseRepository {
         return mapToUser(result.get(0));
     }
 
+    public Boolean CheckToken(String token) {
+        Map<String, Object> user = getRowByColumn("users", "token", token);
+
+        if (user == null)
+            return false;
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("status", 1);
+        update("users", data, "token", token);
+
+        return true;
+    }
+
     // ================= CREATE USER =================
     public User create(User user) {
         Map<String, Object> data = new LinkedHashMap<>();
@@ -41,6 +54,8 @@ public class AuthRepository extends BaseRepository {
         data.put("governorate", user.getGovernorate());
         data.put("password", PasswordUtil.hashPassword(user.getPassword()));
         data.put("role", "user");
+        data.put("status", 0);
+        data.put("token", generateToken(user));
 
         int rows = insert("users", data);
         if (rows == 0)
@@ -61,6 +76,7 @@ public class AuthRepository extends BaseRepository {
         user.setId(toInt(row.get("id")));
         user.setName((String) row.get("name"));
         user.setEmail((String) row.get("email"));
+        user.setToken((String) row.get("token"));
         user.setPhone((String) row.get("phone"));
         user.setGovernorate((String) row.get("governorate"));
         user.setPasswordHash((String) row.get("password"));
