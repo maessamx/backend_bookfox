@@ -254,4 +254,37 @@ public int execute(String sql, Object... params) {
 
         return list;
     }
+
+    // ================= SAFE VALUE CONVERSION =================
+    public static int toInt(Object value) {
+        if (value == null) return 0;
+        if (value instanceof Number) return ((Number) value).intValue();
+        if (value instanceof Boolean) return ((Boolean) value) ? 1 : 0;
+        try {
+            return Integer.parseInt(value.toString().trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public static double toDouble(Object value) {
+        if (value == null) return 0;
+        if (value instanceof Number) return ((Number) value).doubleValue();
+        try {
+            return Double.parseDouble(value.toString().trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public static long toLong(Object value) {
+        if (value == null) return 0;
+        if (value instanceof Number) return ((Number) value).longValue();
+        if (value instanceof Boolean) return ((Boolean) value) ? 1L : 0L;
+        try {
+            return Long.parseLong(value.toString().trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 }

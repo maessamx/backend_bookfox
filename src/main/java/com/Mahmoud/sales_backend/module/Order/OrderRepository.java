@@ -215,15 +215,15 @@ public class OrderRepository extends BaseRepository {
     private Order mapToOrder(Map<String, Object> row) {
         Order order = new Order();
 
-        order.setId(((Number) row.get("id")).intValue());
+        order.setId(toInt(row.get("id")));
         order.setOrderCode((String) row.get("order_code"));
         Object userId = row.get("user_id");
         order.setUserId(userId != null ? ((Number) userId).intValue() : 0);
         order.setCustomer((String) row.get("customer"));
         order.setEmail((String) row.get("email"));
-        order.setSubtotal(((Number) row.get("subtotal")).doubleValue());
-        order.setShipping(((Number) row.get("shipping")).doubleValue());
-        order.setTotal(((Number) row.get("total")).doubleValue());
+        order.setSubtotal(toDouble(row.get("subtotal")));
+        order.setShipping(toDouble(row.get("shipping")));
+        order.setTotal(toDouble(row.get("total")));
         order.setStatus((String) row.get("status"));
         order.setGovernorate((String) row.get("governorate"));
         order.setCity((String) row.get("city"));
@@ -238,15 +238,15 @@ public class OrderRepository extends BaseRepository {
     private OrderItem mapToOrderItem(Map<String, Object> row) {
         OrderItem item = new OrderItem();
 
-        item.setId(((Number) row.get("id")).intValue());
-        item.setOrderId(((Number) row.get("order_id")).intValue());
+        item.setId(toInt(row.get("id")));
+        item.setOrderId(toInt(row.get("order_id")));
         Object productId = row.get("product_id");
         item.setProductId(productId != null ? ((Number) productId).intValue() : 0);
         item.setTitle((String) row.get("title"));
-        item.setPrice(((Number) row.get("price")).doubleValue());
-        item.setQuantity(((Number) row.get("quantity")).intValue());
+        item.setPrice(toDouble(row.get("price")));
+        item.setQuantity(toInt(row.get("quantity")));
         item.setKind((String) row.get("kind"));
-        item.setTotal(((Number) row.get("total")).doubleValue());
+        item.setTotal(toDouble(row.get("total")));
 
         return item;
     }

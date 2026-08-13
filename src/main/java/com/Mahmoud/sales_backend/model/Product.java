@@ -10,6 +10,7 @@ public class Product {
     private String title;
     private int authorId;
     private String authorName;
+    private String author;
     private String category;
     private double price;
     private String cover;

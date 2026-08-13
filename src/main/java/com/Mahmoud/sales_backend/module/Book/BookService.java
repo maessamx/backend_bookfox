@@ -5,7 +5,9 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.Mahmoud.sales_backend.model.Author;
 import com.Mahmoud.sales_backend.model.Product;
+import com.Mahmoud.sales_backend.module.Author.AuthorRepository;
 import com.Mahmoud.sales_backend.security.UserContext;
 import com.Mahmoud.sales_backend.shared.ApiResponse;
 
@@ -13,9 +15,11 @@ import com.Mahmoud.sales_backend.shared.ApiResponse;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, AuthorRepository authorRepository) {
         this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
     }
 
     // ================= GET ALL =================
@@ -59,6 +63,7 @@ public class BookService {
         if (book.getPrice() <= 0)
             return ApiResponse.error("Price must be greater than 0");
 
+        resolveAuthor(book);
         boolean created = bookRepository.create(book);
         if (created)
             return ApiResponse.success("Book created successfully");
@@ -81,6 +86,7 @@ public class BookService {
         if (existing == null)
             return ApiResponse.error("Book not found");
 
+        resolveAuthor(book);
         boolean updated = bookRepository.update(book);
         if (updated)
             return ApiResponse.success("Book updated successfully");
@@ -100,6 +106,20 @@ public class BookService {
             return ApiResponse.success("Book deleted successfully");
 
         return ApiResponse.error("Delete failed");
+    }
+
+    private void resolveAuthor(Product book) {
+        if (book.getAuthorId() > 0) {
+            return;
+        }
+        String name = book.getAuthor();
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        Author author = authorRepository.findByName(name.trim());
+        if (author != null) {
+            book.setAuthorId(author.getId());
+        }
     }
 
     private boolean isAdmin() {

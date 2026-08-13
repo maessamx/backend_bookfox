@@ -39,6 +39,14 @@ public class AuthorRepository extends BaseRepository {
         return mapToAuthor(result.get(0));
     }
 
+    // ================= FIND BY NAME =================
+    public Author findByName(String name) {
+        List<Map<String, Object>> result = query("SELECT * FROM authors WHERE LOWER(name) = LOWER(?) LIMIT 1", name);
+        if (result.isEmpty())
+            return null;
+        return mapToAuthor(result.get(0));
+    }
+
     // ================= GET COUNT =================
     public int getCount() {
         return super.count("authors");
@@ -102,7 +110,7 @@ public class AuthorRepository extends BaseRepository {
     private Author mapToAuthor(Map<String, Object> row) {
         Author author = new Author();
 
-        author.setId(((Number) row.get("id")).intValue());
+        author.setId(toInt(row.get("id")));
         author.setName((String) row.get("name"));
         author.setType((String) row.get("type"));
         author.setCountry((String) row.get("country"));

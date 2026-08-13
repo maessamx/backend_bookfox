@@ -114,14 +114,14 @@ public class UserRepository extends BaseRepository {
     private User mapToUser(Map<String, Object> row) {
         User user = new User();
 
-        user.setId(((Number) row.get("id")).intValue());
+        user.setId(toInt(row.get("id")));
         user.setName((String) row.get("name"));
         user.setEmail((String) row.get("email"));
         user.setPhone((String) row.get("phone"));
         user.setGovernorate((String) row.get("governorate"));
         user.setPasswordHash((String) row.get("password"));
         user.setRole((String) row.get("role"));
-        user.setStatus(((Number) row.get("status")).intValue());
+        user.setStatus(toInt(row.get("status")));
         user.setCreatedAt((Date) row.get("created_at"));
         user.setUpdatedAt((Date) row.get("updated_at"));
 

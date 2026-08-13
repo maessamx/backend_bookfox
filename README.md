@@ -46,8 +46,7 @@ src/main/java/com/Mahmoud/sales_backend/
 ├── Repository/
 │   └── BaseRepository.java        # universal CRUD (getAll, query, insert, update, delete)
 ├── config/
-│   ├── DatabaseConnection.java    # JDBC singleton
-│   └── DBConfig.java              # Connection bean
+│   └── DBConfig.java              # Connection bean, reads spring.datasource.* from application.properties
 ├── security/
 │   ├── CorsConfig.java
 │   ├── JwtAuthFilter.java         # Bearer token filter

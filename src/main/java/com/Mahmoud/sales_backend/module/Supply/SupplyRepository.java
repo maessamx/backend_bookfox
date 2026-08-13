@@ -112,18 +112,19 @@ public class SupplyRepository extends BaseRepository {
     private Product mapToProduct(Map<String, Object> row) {
         Product product = new Product();
 
-        product.setId(((Number) row.get("id")).intValue());
+        product.setId(toInt(row.get("id")));
         product.setKind((String) row.get("kind"));
         product.setTitle((String) row.get("title"));
         Object authorId = row.get("author_id");
         product.setAuthorId(authorId != null ? ((Number) authorId).intValue() : 0);
         product.setAuthorName((String) row.get("author_name"));
+        product.setAuthor((String) row.get("author_name"));
         product.setCategory((String) row.get("category"));
-        product.setPrice(((Number) row.get("price")).doubleValue());
+        product.setPrice(toDouble(row.get("price")));
         product.setCover((String) row.get("cover"));
         product.setDescription((String) row.get("description"));
-        product.setQuantity(((Number) row.get("quantity")).intValue());
-        product.setMinStock(((Number) row.get("min_stock")).intValue());
+        product.setQuantity(toInt(row.get("quantity")));
+        product.setMinStock(toInt(row.get("min_stock")));
         product.setCreatedAt((Date) row.get("created_at"));
         product.setUpdatedAt((Date) row.get("updated_at"));
 

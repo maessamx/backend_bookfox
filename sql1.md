@@ -143,11 +143,11 @@ CREATE TABLE order_items (
 
 -- حسابات الدخول
 INSERT INTO users (name, email, phone, governorate, password, role) VALUES
-('Mahmoud Essam',  'admin@gmail.com',       '01000000000', 'Cairo',       '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin'), -- admin123
-('Youssef Farag',  'user@gmail.com',        '01111111111', 'Giza',        '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'user'),
-('Karim Arafat',   'karimarafat@mail.com',  '01222222222', 'Alexandria',  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'user'),
-('Youssef Mohamed','youssefmo@mail.com',     '01033333333', 'Cairo',       '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'user'),
-('Youssef Hegazy', 'youssefhegazy@mail.com', '01144444444', 'Mansoura',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'user');
+('Mahmoud Essam',  'admin@gmail.com',       '01000000000', 'Cairo',       '$2a$10$PKRk74WrCF0l9QIMvnBQ9OK1lBfBnTNwRAgUky7Lx3ICMEjn6gh7W', 'admin'), -- admin123
+('Youssef Farag',  'user@gmail.com',        '01111111111', 'Giza',        '$2a$10$84xesuVpsfWV2jGrvNcDtO6iOGPCYpDAOSz06tzAIdVC8yNm7k3OK', 'user'),
+('Karim Arafat',   'karimarafat@mail.com',  '01222222222', 'Alexandria',  '$2a$10$84xesuVpsfWV2jGrvNcDtO6iOGPCYpDAOSz06tzAIdVC8yNm7k3OK', 'user'),
+('Youssef Mohamed','youssefmo@mail.com',     '01033333333', 'Cairo',       '$2a$10$84xesuVpsfWV2jGrvNcDtO6iOGPCYpDAOSz06tzAIdVC8yNm7k3OK', 'user'),
+('Youssef Hegazy', 'youssefhegazy@mail.com', '01144444444', 'Mansoura',    '$2a$10$84xesuVpsfWV2jGrvNcDtO6iOGPCYpDAOSz06tzAIdVC8yNm7k3OK', 'user');
 
 -- المؤلفون ودور النشر
 INSERT INTO authors (name, type, country, bio, joined) VALUES
