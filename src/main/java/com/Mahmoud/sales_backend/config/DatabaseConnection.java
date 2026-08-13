@@ -20,11 +20,15 @@ public class DatabaseConnection {
 
             // Fallback للـ local development
             if (host == null) {
-                host     = "localhost";
-                port     = "3306";
-                database = "mandoob2";
+                //host     = "localhost";
+                //port     = "3306";
+                //database = "mandoob2";
+                //password = "";
+                host     = "turntable.proxy.rlwy.net";
+                port     = "26352";
+                database = "railway";
                 user     = "root";
-                password = "";
+                password = "IkOMOfJVwpadOnqtMiMHitTLYpvZYLgR";
             }
 
             String url = "jdbc:mysql://" + host + ":" + port + "/" + database
