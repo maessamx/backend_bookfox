@@ -19,8 +19,7 @@ public class CorsConfig {
                                 "http://127.0.0.1:8000",
                                 "http://127.0.0.1:5500",
                                 "http://localhost:3000",
-                                "http://localhost:3001",
-                                "https://sbx-f7jvyezsuoqphrua.arena.site")
+                                "http://localhost:3001")
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
