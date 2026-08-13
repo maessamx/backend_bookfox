@@ -14,10 +14,9 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
 
-                //        .allowedOrigins("https://mandoob-frontend1.vercel.app")
                 registry.addMapping("/**")
                 
-                        .allowedOrigins("http://localhost:3001")
+                        .allowedOrigins("http://localhost:3000", "http://localhost:3001")
                         .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

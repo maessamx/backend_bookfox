@@ -1,15 +1,15 @@
 package com.Mahmoud.sales_backend.model;
-import java.util.Date;
 
+import java.util.Date;
 import lombok.Data;
 
 @Data
 public class User {
     private int id;
-    private double net;
     private String name;
     private String email;
     private String phone;
+    private String governorate;
     private String passwordHash;
     private String password;
     private String token;

@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.Mahmoud</groupId>
-	<artifactId>sales-backend</artifactId>
+	<artifactId>bookfox-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>BookFox Backend</name>
+	<description>BookFox bookstore backend - Helwan Engineering summer training project</description>
 	<url/>
 	<licenses>
 		<license/>

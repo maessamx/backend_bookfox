@@ -1,5 +1,6 @@
 package com.Mahmoud.sales_backend.module.Dashboard;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,82 +19,52 @@ public class DashboardService {
         this.dashboardRepository = dashboardRepository;
     }
 
-    // ================= Get Stats =================
+    // ================= GET STATS (admin) =================
     public ApiResponse getStats() {
-        int userId  = UserContext.getUserId();
         String role = UserContext.getRole();
+        if (!"admin".equals(role))
+            return ApiResponse.error("Not allowed");
 
-        Dashboard dto= new Dashboard();
+        Dashboard dto = new Dashboard();
 
-        if ("admin".equals(role)) {
-            dto.setTotalClients(dashboardRepository.getTotalClients());
-            dto.setTotalDebtsmandoob(dashboardRepository.getTotalMandoobNetBalance());
-            dto.setTotalSalesToday(dashboardRepository.getTotalSalesToday());
-            dto.setInvoicesToday(dashboardRepository.getInvoicesToday());
-            dto.setCollectionsToday(dashboardRepository.getCollectionsToday());
-            dto.setTotalDebts(dashboardRepository.getTotalDebts());
-            dto.setTotalProducts(dashboardRepository.getTotalProducts());
-            dto.setLowStockProducts(dashboardRepository.getLowStockProducts());
-            dto.setPendingCashRequests(dashboardRepository.getPendingCashRequests());
-            dto.setTotalProfitToday(dashboardRepository.getTotalProfitToday());
-            dto.setTotalProfitAllTime(dashboardRepository.getTotalProfitAllTime());
-            
-        } else {
-            dto.setTotalClients(dashboardRepository.getTotalClientsByMandoob(userId));
-            dto.setTotalDebtsmandoob(dashboardRepository.getMandoobNetBalance(userId));
-            dto.setTotalSalesToday(dashboardRepository.getMandoobSalesToday(userId));
-            dto.setInvoicesToday(dashboardRepository.getMandoobInvoicesToday(userId));
-            dto.setCollectionsToday(dashboardRepository.getMandoobCollectionsToday(userId));
-            dto.setTotalDebts(dashboardRepository.getMandoobDebts(userId));
-            dto.setTotalProducts(dashboardRepository.getMandoobStockTotalQuantity(userId));
-        }
+        dto.setTotalBooks(dashboardRepository.getTotalBooks());
+        dto.setTotalSupplies(dashboardRepository.getTotalSupplies());
+        dto.setTotalProducts(dashboardRepository.getTotalProducts());
+        dto.setTotalOrders(dashboardRepository.getTotalOrders());
+        dto.setTotalUsers(dashboardRepository.getTotalUsers());
+        dto.setOrdersToday(dashboardRepository.getOrdersToday());
+        dto.setRevenue(dashboardRepository.getTotalRevenue());
+        dto.setRevenueToday(dashboardRepository.getRevenueToday());
+        dto.setPendingOrders(dashboardRepository.getPendingOrders());
+        dto.setLowStockProducts(dashboardRepository.getLowStockProducts());
 
         return ApiResponse.success(dto);
     }
 
-    public ApiResponse getwalletmandoob(){
-        int userId  = UserContext.getUserId();
+    // ================= SALES ANALYTICS (admin) =================
+    public ApiResponse getSalesAnalytics(int days, int topProducts) {
         String role = UserContext.getRole();
-        if ("admin".equals(role)) {
-            return ApiResponse.error("not allowed");
-        }
-        return ApiResponse.success(dashboardRepository.getMandoobNetBalanceWithpending(userId));
+        if (!"admin".equals(role))
+            return ApiResponse.error("Not allowed");
+
+        List<Map<String, Object>> trend = dashboardRepository.getSalesTrend(days);
+        List<Map<String, Object>> products = dashboardRepository.getTopProducts(topProducts);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("salesTrend", trend);
+        result.put("topProducts", products);
+        result.put("periodDays", days);
+
+        return ApiResponse.success(result);
     }
 
-    // ===== أضف الـ methods دي جوا DashboardService =====
+    // ================= TOP SELLERS (admin) =================
+    public ApiResponse getTopSellers(int limit) {
+        String role = UserContext.getRole();
+        if (!"admin".equals(role))
+            return ApiResponse.error("Not allowed");
 
-/**
- * GET /dashboard/sales-analytics?days=30&topProducts=10
- * إحصائيات المبيعات: تطور يومي + أكثر المنتجات مبيعاً
- */
-public ApiResponse getSalesAnalytics(int days, int topProducts) {
-    String role = UserContext.getRole();
-    if (!"admin".equals(role)) {
-        return ApiResponse.error("not allowed");
+        List<Map<String, Object>> sellers = dashboardRepository.getTopSellers(limit);
+        return ApiResponse.success(sellers);
     }
-
-    List<Map<String, Object>> trend    = dashboardRepository.getSalesTrend(days);
-    List<Map<String, Object>> products = dashboardRepository.getTopProducts(topProducts);
-
-    Map<String, Object> result = new java.util.HashMap<>();
-    result.put("salesTrend",   trend);
-    result.put("topProducts",  products);
-    result.put("periodDays",   days);
-
-    return ApiResponse.success(result);
-}
-
-/**
- * GET /dashboard/mandoobs-performance
- * أداء جميع المندوبين
- */
-public ApiResponse getMandoobsPerformance() {
-    String role = UserContext.getRole();
-    if (!"admin".equals(role)) {
-        return ApiResponse.error("not allowed");
-    }
-
-    List<Map<String, Object>> data = dashboardRepository.getMandoobsPerformance();
-    return ApiResponse.success(data);
-}
 }
