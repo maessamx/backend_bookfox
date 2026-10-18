@@ -6,7 +6,7 @@ authentication, authors & publishers, books, school/office supplies, orders,
 and a full admin dashboard.
 
 The system is designed for the **Helwan Engineering** summer training team.
-
+ 
 ---
 
 ## 👥 Team Members
